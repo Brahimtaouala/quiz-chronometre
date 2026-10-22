@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz chronométré multijoueur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f1ff;--surface:#ffffff;--ink:#1c1b3a;--muted:#5b5a7a;--accent:#4b3fe0;--accent-ink:#ffffff;
+  --timer:#e8890c;--ok:#1f9d55;--bad:#d6403a;--line:#d9d6f5;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15142b;--surface:#201f3d;--ink:#f1f0ff;--muted:#a9a7d0;--accent:#8b82ff;--accent-ink:#15142b;
+  --timer:#ffb547;--ok:#4cd08a;--bad:#ff7a73;--line:#38366a;color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#15142b;--surface:#201f3d;--ink:#f1f0ff;--muted:#a9a7d0;--accent:#8b82ff;--accent-ink:#15142b;
+  --timer:#ffb547;--ok:#4cd08a;--bad:#ff7a73;--line:#38366a;color-scheme:dark;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45}
+main{max-width:640px;margin:0 auto;padding:24px 18px 40px}
+h1{font-size:clamp(2rem,7vw,2.9rem);line-height:1.02;font-weight:800;margin:8px 0 6px;letter-spacing:-.02em}
+h2{font-size:1.35rem;font-weight:800;margin:0 0 12px}
+p.lead{color:var(--muted);margin:0 0 22px}
+label{display:block;font-weight:600;margin:18px 0 8px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:8px}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;padding:11px;border-radius:10px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.go{display:block;width:100%;margin-top:22px;padding:15px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:1.15rem}
+.ghost{padding:10px 16px;border-radius:10px;border:2px solid var(--line);background:transparent;color:var(--ink);font-weight:600}
+details{margin-top:22px;background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:12px 16px}
+summary{cursor:pointer;font-weight:600}
+ol.top{margin:12px 0 0;padding-left:22px}
+.board{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.chip{flex:1 1 120px;padding:8px 12px;border-radius:10px;border:2px solid var(--line);background:var(--surface);color:var(--muted);min-width:0}
+.chip b{display:block;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip.on{border-color:var(--accent);color:var(--ink)}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-weight:600;margin-bottom:6px}
+.stage{display:flex;align-items:center;gap:18px;margin:10px 0 18px}
+.ring{position:relative;width:96px;height:96px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:9}
+.ring .bg{stroke:var(--line)}
+.ring .fg{stroke:var(--timer);stroke-linecap:round;stroke-dasharray:276.46;transition:stroke-dashoffset 1s linear}
+.ring.low .fg{stroke:var(--bad)}
+.ring span{position:absolute;inset:0;display:grid;place-items:center;font-size:2rem;font-weight:800}
+.q{font-size:clamp(1.25rem,4.6vw,1.65rem);font-weight:800;line-height:1.2;margin:0}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;width:100%;padding:13px 14px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--ink)}
+.opt i{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:var(--line);font-style:normal;font-weight:800}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.dim{opacity:.35}
+.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,var(--surface))}
+.opt.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 18%,var(--surface))}
+.tools{display:flex;gap:10px;margin:16px 0}
+.tools button:disabled{opacity:.4;cursor:default}
+.fb{min-height:1.5em;font-weight:800;margin-top:4px}
+.fb.ok{color:var(--ok)}.fb.bad{color:var(--bad)}
+.rank{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:10px}
+.rank li{display:flex;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font-weight:600}
+.rank li:first-child{border-color:var(--accent);font-size:1.2rem;font-weight:800}
+@media (prefers-reduced-motion:reduce){.ring .fg{transition:none}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+let Q=[
+{category:"Culture générale",question:"Quelle est la capitale du Maroc ?",options:["Casablanca","Rabat","Marrakech","Fès"],answer:1},
+{category:"Culture générale",question:"Combien de continents y a-t-il sur Terre (modèle le plus courant) ?",options:["5","6","7","8"],answer:2},
+{category:"Culture générale",question:"Quel est le plus grand océan du monde ?",options:["Atlantique","Indien","Arctique","Pacifique"],answer:3},
+{category:"Culture générale",question:"Quelle planète est surnommée la planète rouge ?",options:["Mars","Vénus","Jupiter","Mercure"],answer:0},
+{category:"Informatique",question:"Que signifie HTML ?",options:["HyperText Markup Language","High Tech Modern Language","Home Tool Markup Language","HyperTransfer Mail Link"],answer:0},
+{category:"Informatique",question:"Quel langage est utilisé dans ce quiz ?",options:["Java","Python","C++","PHP"],answer:1},
+{category:"Informatique",question:"Quelle unité vaut 8 bits ?",options:["Un mot","Un kilo","Un octet","Un pixel"],answer:2},
+{category:"Informatique",question:"Quel symbole commence un commentaire en Python ?",options:["//","#","--","/*"],answer:1},
+{category:"Sciences",question:"Quel est le symbole chimique de l’eau ?",options:["O2","CO2","H2O","HO"],answer:2},
+{category:"Sciences",question:"Combien de planètes compte le système solaire ?",options:["7","8","9","10"],answer:1},
+{category:"Sciences",question:"Quel gaz les plantes absorbent-elles pour la photosynthèse ?",options:["Oxygène","Azote","Dioxyde de carbone","Hydrogène"],answer:2},
+{category:"Sciences",question:"Quelle est la vitesse approximative de la lumière dans le vide ?",options:["300 000 km/s","30 000 km/s","3 000 km/s","3 000 000 km/s"],answer:0}
+];
+const TIME=15, C=276.46, KEY="quiz_scores";
+const app=document.getElementById("app");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let S={n:2,names:["Joueur 1","Joueur 2","Joueur 3","Joueur 4"],cat:"Toutes"};
+let G=null,tid=null,mode="setup",SRV=null;
+
+function loadScores(){if(SRV)return SRV.slice();try{const d=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(d)?d:[]}catch(e){return []}}
+function saveScores(list){try{localStorage.setItem(KEY,JSON.stringify(list))}catch(e){}}
+function stop(){clearTimeout(tid);tid=null}
+
+function setup(){
+  stop();mode="setup";
+  const cats=[...new Set(Q.map(q=>q.category))].sort();
+  const top=loadScores().sort((a,b)=>b.score-a.score).slice(0,10);
+  app.innerHTML=`
+    <h1>Quiz chronométré</h1>
+    <p class="lead">Chaque joueur répond à tour de rôle, avec 15 secondes par question.</p>
+    <label>Nombre de joueurs</label>
+    <div class="seg">${[2,3,4].map(k=>`<button data-n="${k}" aria-pressed="${S.n===k}">${k}</button>`).join("")}</div>
+    <label>Noms</label>
+    ${Array.from({length:S.n},(_,i)=>`<input data-i="${i}" value="${esc(S.names[i])}" maxlength="20" aria-label="Nom du joueur ${i+1}">`).join("")}
+    <label for="cat">Catégorie</label>
+    <select id="cat"><option>Toutes</option>${cats.map(c=>`<option ${c===S.cat?"selected":""}>${esc(c)}</option>`).join("")}</select>
+    <button class="go" id="start">Commencer la partie</button>
+    <details><summary>Classement sauvegardé</summary>
+      ${top.length?`<ol class="top">${top.map(p=>`<li>${esc(p.name)} : ${p.score} points</li>`).join("")}</ol>`:`<p class="lead" style="margin:10px 0 0">Aucun score pour l’instant. Terminez une partie pour en enregistrer.</p>`}
+    </details>`;
+  app.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>{S.n=+b.dataset.n;setup()});
+  app.querySelectorAll("[data-i]").forEach(inp=>inp.oninput=()=>{S.names[+inp.dataset.i]=inp.value});
+  document.getElementById("cat").onchange=e=>{S.cat=e.target.value};
+  document.getElementById("start").onclick=start;
+}
+
+function start(){
+  const pool=shuffle(Q.filter(q=>S.cat==="Toutes"||q.category===S.cat));
+  const players=Array.from({length:S.n},(_,i)=>({name:(S.names[i]||"").trim()||`Joueur ${i+1}`,score:0,fifty:true,pass:true}));
+  G={players,pool,turn:0};
+  ask();
+}
+
+function ask(){
+  stop();
+  if(G.turn>=G.pool.length){finish();return}
+  mode="ask";
+  const q=G.pool[G.turn],p=G.players[G.turn%G.players.length];
+  G.q=q;G.p=p;G.answered=false;G.left=TIME;
+  const canFifty=p.fifty&&q.options.length>2;
+  app.innerHTML=`
+    <div class="board">${G.players.map(x=>`<div class="chip ${x===p?"on":""}"><b>${esc(x.name)}</b><span data-s>${x.score}</span> points</div>`).join("")}</div>
+    <div class="meta"><span>Question ${G.turn+1} sur ${G.pool.length}</span><span>${esc(q.category)}</span></div>
+    <div class="stage">
+      <div class="ring" id="ring" role="timer" aria-label="Temps restant"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="44"/><circle class="fg" id="fg" cx="50" cy="50" r="44" style="stroke-dashoffset:0"/></svg><span id="num">${TIME}</span></div>
+      <p class="q">${esc(q.question)}</p>
+    </div>
+    <div class="opts" id="opts">${q.options.map((o,i)=>`<button class="opt" data-k="${i}"><i>${String.fromCharCode(65+i)}</i>${esc(o)}</button>`).join("")}</div>
+    <div class="tools">
+      <button class="ghost" id="fifty" ${canFifty?"":"disabled"}>50/50</button>
+      <button class="ghost" id="pass" ${p.pass?"":"disabled"}>Passer</button>
+    </div>
+    <div class="fb" id="fb" aria-live="polite"></div>
+    <div id="next"></div>`;
+  app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.k));
+  document.getElementById("fifty").onclick=fifty;
+  document.getElementById("pass").onclick=()=>{if(G.answered||!p.pass)return;p.pass=false;answer(null,true)};
+  schedule();
+}
+
+function schedule(){
+  tid=setTimeout(()=>{
+    G.left--;
+    const ring=document.getElementById("ring");
+    document.getElementById("num").textContent=Math.max(G.left,0);
+    document.getElementById("fg").style.strokeDashoffset=C*(1-G.left/TIME);
+    ring.classList.toggle("low",G.left<=5);
+    if(G.left<=0)answer(null);else schedule();
+  },1000);
+}
+
+function fifty(){
+  if(G.answered||!G.p.fifty)return;
+  G.p.fifty=false;
+  document.getElementById("fifty").disabled=true;
+  const wrong=G.q.options.map((_,i)=>i).filter(i=>i!==G.q.answer);
+  shuffle(wrong).slice(0,2).forEach(i=>{const b=app.querySelector(`[data-k="${i}"]`);b.disabled=true;b.classList.add("dim")});
+}
+
+function answer(choice,passed){
+  if(G.answered)return;
+  G.answered=true;stop();
+  const q=G.q,correct=choice!==null&&choice===q.answer;
+  if(correct){G.p.score+=10;app.querySelector(".chip.on [data-s]").textContent=G.p.score}
+  app.querySelectorAll(".opt").forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.answer)b.classList.add("ok");else if(i===choice)b.classList.add("bad");
+  });
+  document.getElementById("fifty").disabled=true;
+  document.getElementById("pass").disabled=true;
+  const fb=document.getElementById("fb");
+  fb.className="fb "+(correct?"ok":"bad");
+  fb.textContent=correct?"Bonne réponse ! +10 points":passed?"Question passée":choice===null?"Temps écoulé !":"Mauvaise réponse";
+  const last=G.turn+1>=G.pool.length;
+  document.getElementById("next").innerHTML=`<button class="go" id="nx" style="margin-top:12px">${last?"Voir le classement":"Question suivante"}</button>`;
+  const nx=document.getElementById("nx");nx.onclick=()=>{G.turn++;ask()};nx.focus();
+}
+
+function finish(){
+  stop();mode="end";
+  const rank=G.players.slice().sort((a,b)=>b.score-a.score);
+  const fresh=G.players.map(p=>({name:p.name,score:p.score}));
+  if(SRV)SRV=SRV.concat(fresh);else saveScores(loadScores().concat(fresh));
+  fetch("/api/scores",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(fresh)}).catch(()=>{});
+  app.innerHTML=`
+    <h1>Classement final</h1>
+    <p class="lead">${esc(rank[0].name)} remporte la partie avec ${rank[0].score} points.</p>
+    <ol class="rank">${rank.map((p,i)=>`<li><span>${i+1}. ${esc(p.name)}</span><span>${p.score} points</span></li>`).join("")}</ol>
+    <button class="go" id="again">Nouvelle partie</button>`;
+  document.getElementById("again").onclick=setup;
+}
+
+document.addEventListener("keydown",e=>{
+  if(mode!=="ask"||!G||e.target.tagName==="INPUT"||e.ctrlKey||e.metaKey||e.altKey)return;
+  const k="abcd1234".indexOf(e.key.toLowerCase());
+  if(k>=0&&!G.answered){const i=k%4,b=app.querySelector(`[data-k="${i}"]`);if(b&&!b.disabled)answer(i)}
+});
+Promise.all([
+  fetch("/api/questions").then(r=>r.json()).then(d=>{if(Array.isArray(d)&&d.length)Q=d}),
+  fetch("/api/scores").then(r=>r.json()).then(d=>{if(Array.isArray(d))SRV=d})
+]).catch(()=>{}).finally(setup);
+</script>
+</body>
+</html>
