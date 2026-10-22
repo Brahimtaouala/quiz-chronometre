@@ -1,0 +1,74 @@
+[
+  {
+    "category": "Culture générale",
+    "question": "Quelle est la capitale du Maroc ?",
+    "options": ["Casablanca", "Rabat", "Marrakech", "Fès"],
+    "answer": 1
+  },
+  {
+    "category": "Culture générale",
+    "question": "Combien de continents y a-t-il sur Terre (modèle le plus courant) ?",
+    "options": ["5", "6", "7", "8"],
+    "answer": 2
+  },
+  {
+    "category": "Culture générale",
+    "question": "Quel est le plus grand océan du monde ?",
+    "options": ["Atlantique", "Indien", "Arctique", "Pacifique"],
+    "answer": 3
+  },
+  {
+    "category": "Culture générale",
+    "question": "Quelle planète est surnommée la planète rouge ?",
+    "options": ["Mars", "Vénus", "Jupiter", "Mercure"],
+    "answer": 0
+  },
+  {
+    "category": "Informatique",
+    "question": "Que signifie HTML ?",
+    "options": ["HyperText Markup Language", "High Tech Modern Language", "Home Tool Markup Language", "HyperTransfer Mail Link"],
+    "answer": 0
+  },
+  {
+    "category": "Informatique",
+    "question": "Quel langage est utilisé dans ce quiz ?",
+    "options": ["Java", "Python", "C++", "PHP"],
+    "answer": 1
+  },
+  {
+    "category": "Informatique",
+    "question": "Quelle unité vaut 8 bits ?",
+    "options": ["Un mot", "Un kilo", "Un octet", "Un pixel"],
+    "answer": 2
+  },
+  {
+    "category": "Informatique",
+    "question": "Quel symbole commence un commentaire en Python ?",
+    "options": ["//", "#", "--", "/*"],
+    "answer": 1
+  },
+  {
+    "category": "Sciences",
+    "question": "Quel est le symbole chimique de l'eau ?",
+    "options": ["O2", "CO2", "H2O", "HO"],
+    "answer": 2
+  },
+  {
+    "category": "Sciences",
+    "question": "Combien de planètes compte le système solaire ?",
+    "options": ["7", "8", "9", "10"],
+    "answer": 1
+  },
+  {
+    "category": "Sciences",
+    "question": "Quel gaz les plantes absorbent-elles pour la photosynthèse ?",
+    "options": ["Oxygène", "Azote", "Dioxyde de carbone", "Hydrogène"],
+    "answer": 2
+  },
+  {
+    "category": "Sciences",
+    "question": "Quelle est la vitesse approximative de la lumière dans le vide ?",
+    "options": ["300 000 km/s", "30 000 km/s", "3 000 km/s", "3 000 000 km/s"],
+    "answer": 0
+  }
+]
